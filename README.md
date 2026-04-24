@@ -36,7 +36,7 @@ Ensure you have the following installed and properly configured:
 **1. Clone the repository**
 Open your terminal and run:
 ```bash
-git clone [https://github.com/manurungandre1927-cloud/studentHub.git](https://github.com/manurungandre1927-cloud/studentHub.git)
+git clone [https://github.com/andreyyste/studentHub.git](https://github.com/andreyyste/studentHub.git)
 ```
 2. Navigate to the project directory
 
