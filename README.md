@@ -31,28 +31,32 @@ Ensure you have the following installed and properly configured:
 * Android Studio or VS Code (with Flutter & Dart extensions)
 * An Android Emulator or a physical device connected with USB Debugging enabled.
 
-### Installation Steps
+Installation Steps
 
 **1. Clone the repository**
-Open your terminal and run:
+Open your terminal and runw:
 ```bash
-git clone [https://github.com/manurungandre1927-cloud/studentHub.git](https://github.com/manurungandre1927-cloud/studentHub.git)
-2. Navigate to the project directory
+git clone [https://github.com/manurungandre1927-cloud/studentHub.git](https://github.com/manurungandre1927-cloud/studentHub.git)y
+```
+2. Navigate to the project director
 
-Bash
+```bash
 cd studentHub
+```
 3. Install dependencies
 Fetch all the required Flutter packages:
 
-Bash
+```bash
 flutter pub get
+```
 4. Run the application
 Execute the following command to launch the app on your connected device/emulator:
 
-Bash
+```bash
 flutter run
+```
 Note for Non-Developers: If you just want to use the app without compiling the code, head over to the Releases tab on the right side of this repository, download the app-release.apk file, and install it directly on your Android device.
-
+```bash
 📂 Project Structure
 The codebase is modularized for better maintainability:
 
