@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+// ignore: unnecessary_import
+import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 import 'models/student_task.dart';
 import 'models/class_schedule.dart';
@@ -6,8 +10,16 @@ import 'screens/elok_portal_screen.dart';
 import 'screens/view_tasks_screen.dart';
 import 'screens/add_task_screen.dart';
 import 'screens/schedule_screen.dart';
+import 'screens/view_materials_screen.dart'; 
 
 void main() {
+  // Cek kalau aplikasinya dijalanin di desktop (Linux/Windows)
+  if (Platform.isWindows || Platform.isLinux) {
+    // Inisialisasi FFI biar SQLite bisa jalan
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+  
   runApp(const StudentApp());
 }
 
@@ -209,7 +221,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               size: 16,
                                             ),
                                             SizedBox(width: 5),
-                                            const Expanded(
+                                            Expanded(
                                               child: Text(
                                                 "Tugas Mepet",
                                                 style: TextStyle(
@@ -389,6 +401,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         _buildMenuCard(
                           context,
+                          "Materi Offline", 
+                          Icons.library_books,
+                          Colors.purple,
+                        ),
+                        _buildMenuCard(
+                          context,
                           "Jadwal Kuliah",
                           Icons.calendar_today_rounded,
                           Colors.blue,
@@ -408,7 +426,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMenuCard(
+Widget _buildMenuCard(
     BuildContext context,
     String title,
     IconData icon,
@@ -428,6 +446,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             MaterialPageRoute(builder: (context) => const ViewTasksScreen()),
           );
           _refreshData();
+        } else if (title == "Materi Offline") {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ViewMaterialsScreen()),
+          );
         } else if (title == "Jadwal Kuliah") {
           await Navigator.push(
             context,
