@@ -19,6 +19,7 @@ class DatabaseHelper {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
+    // Kalau lu mau nambah tabel/kolom lagi besok-besok, version-nya dinaikin
     return await openDatabase(path, version: 1, onCreate: _createDB);
   }
 
@@ -52,6 +53,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title TEXT NOT NULL,
         course TEXT NOT NULL,
+        category TEXT NOT NULL, 
         filePath TEXT NOT NULL
       )
     ''');
@@ -144,6 +146,7 @@ class DatabaseHelper {
     }
   }
 
+  // --- OPERATIONS FOR SCHEDULES ---
   Future<List<ClassSchedule>> getSchedulesBySemester(String semester) async {
     final db = await instance.database;
     final result = await db.query(
@@ -181,6 +184,7 @@ class DatabaseHelper {
     return await db.delete('schedules', where: 'id = ?', whereArgs: [id]);
   }
 
+  // --- OPERATIONS FOR TASKS ---
   Future<int> insertTask(StudentTask task) async {
     final db = await instance.database;
     return await db.insert('tasks', task.toMap());
@@ -189,7 +193,6 @@ class DatabaseHelper {
   Future<List<StudentTask>> getAllTasks() async {
     final db = await instance.database;
     final result = await db.query('tasks', orderBy: 'deadline ASC');
-
     return result.map((json) => StudentTask.fromMap(json)).toList();
   }
 
@@ -199,12 +202,12 @@ class DatabaseHelper {
   }
 
   // --- OPERATIONS FOR MATERIALS ---
-
-  Future<int> insertMaterial(String title, String course, String filePath) async {
+  Future<int> insertMaterial(String title, String course, String category, String filePath) async {
     final db = await instance.database;
     return await db.insert('materials', {
       'title': title,
       'course': course,
+      'category': category,
       'filePath': filePath,
     });
   }
@@ -218,5 +221,4 @@ class DatabaseHelper {
     final db = await instance.database;
     return await db.delete('materials', where: 'id = ?', whereArgs: [id]);
   }
-
 }

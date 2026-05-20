@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import '../database_helper.dart'; // Sesuaikan path-nya
+import '../database_helper.dart'; 
+import '../models/student_task.dart'; // Wajib di-import biar StudentTask jalan
 
 class PdfViewerScreen extends StatefulWidget {
   final String? pdfUrl;
   final String? cookie;
-  final String? localPath; // Tambahan properti buat file lokal
+  final String? localPath; 
 
   const PdfViewerScreen({
     super.key,
@@ -24,6 +25,12 @@ class PdfViewerScreen extends StatefulWidget {
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
   bool isDownloading = false;
 
+  // Form Controller untuk Popup
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _courseController = TextEditingController();
+  String _selectedCategory = 'Slide'; 
+  final List<String> _categories = ['Slide', 'Catatan', 'Latihan', 'Lainnya'];
+
   Future<void> _downloadAndSavePdf(String type) async {
     if (widget.pdfUrl == null || widget.cookie == null) return;
 
@@ -33,7 +40,9 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 
     try {
       final dir = await getApplicationDocumentsDirectory();
-      String fileName = "studenthub_${DateTime.now().millisecondsSinceEpoch}.pdf";
+      // Bikin nama file dari inputan user biar rapi, buang spasi
+      String cleanTitle = _titleController.text.replaceAll(' ', '_');
+      String fileName = "${cleanTitle}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       String savePath = "${dir.path}/$fileName";
 
       var dio = Dio();
@@ -43,31 +52,123 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         options: Options(headers: {'Cookie': widget.cookie}),
       );
 
-      // Dummy data mata kuliah & judul, nanti bisa lu kembangin pake input dialog / Gemini
-      String dummyCourse = "Algoritme dan Struktur Data"; 
-      String dummyTitle = "Materi eLOK - ${DateTime.now().day}/${DateTime.now().month}";
-
       if (type == 'tugas') {
-        // Taruh logic insertTask ke SQLite di sini
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Berhasil diunduh! Jangan lupa set deadline di List Tugas.")),
+        // Bikin deadline default (H+7) kalau di-download dari eLOK
+        DateTime defaultDeadline = DateTime.now().add(const Duration(days: 7));
+        
+        final newTask = StudentTask(
+          title: _titleController.text,
+          course: _courseController.text,
+          deadline: defaultDeadline,
+          filePath: savePath, // Path PDF yang baru di-download diselipin di sini
         );
+        
+        await DatabaseHelper.instance.insertTask(newTask);
+        
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Tugas disimpan! Deadline diset H+7 (Bisa diedit nanti).")),
+           );
+        }
+
       } else if (type == 'materi') {
-        await DatabaseHelper.instance.insertMaterial(dummyTitle, dummyCourse, savePath);
+        // Masukin ke SQLite Material dengan Kategori
+        await DatabaseHelper.instance.insertMaterial(
+          _titleController.text, 
+          _courseController.text, 
+          _selectedCategory, 
+          savePath
+        );
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Materi berhasil disimpan!")),
+          );
+        }
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Berhasil disimpan ke daftar $type!")),
-      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal download: $e")),
-      );
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("Gagal download: $e")),
+         );
+      }
     } finally {
-      setState(() {
-        isDownloading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isDownloading = false;
+        });
+      }
     }
+  }
+
+  // --- POPUP FORM SEBELUM DOWNLOAD ---
+  void _showDownloadDialog(String type) {
+    // Clear form tiap kali popup dibuka
+    _titleController.clear();
+    _courseController.clear();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User gabisa nutup modal sembarangan 
+      builder: (context) => AlertDialog(
+        title: Text("Simpan sebagai $type"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: type == 'tugas' ? "Judul Tugas" : "Judul Materi",
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _courseController,
+                decoration: const InputDecoration(labelText: "Nama Mata Kuliah"),
+              ),
+              const SizedBox(height: 10),
+              
+              // Dropdown Kategori cuma muncul kalau simpan sebagai Materi
+              if (type == 'materi')
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: "Kategori"),
+                  value: _selectedCategory,
+                  items: _categories.map((String category) {
+                    return DropdownMenuItem<String>(
+                      value: category,
+                      child: Text(category),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    }
+                  },
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_titleController.text.isNotEmpty && _courseController.text.isNotEmpty) {
+                Navigator.pop(context); // Tutup dialog
+                _downloadAndSavePdf(type); // Gas download
+              }
+            },
+            child: const Text('Download'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showSaveOptions() {
@@ -82,7 +183,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               title: const Text('Simpan sebagai Tugas'),
               onTap: () {
                 Navigator.pop(context);
-                _downloadAndSavePdf('tugas');
+                _showDownloadDialog('tugas'); // Panggil Dialog Form
               },
             ),
             ListTile(
@@ -90,7 +191,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               title: const Text('Simpan sebagai Materi'),
               onTap: () {
                 Navigator.pop(context);
-                _downloadAndSavePdf('materi');
+                _showDownloadDialog('materi'); // Panggil Dialog Form
               },
             ),
           ],
@@ -101,7 +202,6 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Cek apakah ngebuka file lokal atau url network
     final isLocal = widget.localPath != null;
 
     return Scaffold(
@@ -116,10 +216,19 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               ? SfPdfViewer.file(File(widget.localPath!))
               : SfPdfViewer.network(widget.pdfUrl!, headers: {'Cookie': widget.cookie!}),
           if (isDownloading)
-            const Center(child: CircularProgressIndicator()),
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
-      // Tombol download cuma muncul kalau bukanya dari eLOK (Network URL)
       floatingActionButton: isLocal
           ? null
           : FloatingActionButton(

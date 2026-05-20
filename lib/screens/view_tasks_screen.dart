@@ -54,16 +54,28 @@ class _ViewTasksScreenState extends State<ViewTasksScreen> {
                   title: Text(task.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text("${task.course}\nDeadline: ${task.deadline.toString().substring(0, 16)}"),
                   isThreeLine: true,
-                  trailing: task.filePath != null
-                      ? const Icon(Icons.picture_as_pdf, color: Colors.red)
-                      : null,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (task.filePath != null)
+                        const Icon(Icons.picture_as_pdf, color: Colors.red),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.grey),
+                        onPressed: () async {
+                          if (task.id != null) {
+                            await DatabaseHelper.instance.deleteTask(task.id!);
+                            _refreshTasks(); // Refresh list setelah dihapus
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                   onTap: () {
                     if (task.filePath != null) {
-                      // Buka dokumen lokal
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PdfViewerScreen(localPath: task.filePath),
+                          builder: (context) => PdfViewerScreen(localPath: task.filePath!),
                         ),
                       );
                     } else {
