@@ -32,6 +32,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     _refreshSchedules();
   }
 
+  /// Mengambil data jadwal kelas terbaru dari database berdasarkan semester yang sedang aktif.
   Future<void> _refreshSchedules() async {
     setState(() => _isLoading = true);
     final data = await DatabaseHelper.instance.getSchedulesBySemester(
@@ -45,6 +46,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Membangun navigasi berbasis tab (TabBar) yang menampung 5 hari kerja (Senin - Jumat)
     return DefaultTabController(
       length: 5,
       child: Scaffold(
@@ -109,7 +111,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
+  /// Membangun antarmuka representasi daftar jadwal berdasarkan input hari (Senin, Selasa, dsb.).
   Widget _buildDaySchedule(String day) {
+    // Memfilter data jadwal keseluruhan dengan kecocokan pada variabel "hari" yang spesifik
     final todaySchedule = mySchedule.where((s) => s.day == day).toList();
 
     if (todaySchedule.isEmpty) {
@@ -146,6 +150,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
+            // Mengubah palet warna elemen antarmuka apabila kelas bersifat dibatalkan atau kelas pengganti
             color: isBatal
                 ? Colors.grey.shade200
                 : (item.isMakeup ? Colors.orange.shade50 : Colors.white),
@@ -220,6 +225,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                           ],
                         ),
 
+                        // Render badge visual (label penanda) terkait status operasional jadwal khusus
                         if (isBatal || item.isMakeup) ...[
                           const SizedBox(height: 8),
                           Row(

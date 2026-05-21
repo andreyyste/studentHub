@@ -17,8 +17,11 @@ class AddEditScheduleScreen extends StatefulWidget {
 }
 
 class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
+  // Pengendali (Controllers) untuk input teks
   final _courseController = TextEditingController();
   final _roomController = TextEditingController();
+  
+  // Variabel penampung state (status) formulir
   String _selectedDay = "Senin";
   late String _selectedSemester;
   TimeOfDay? _startTime;
@@ -43,6 +46,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
     super.initState();
     _selectedSemester = widget.defaultSemester;
 
+    // Jika mode edit (schedule tidak null), inisialisasi form dengan data yang sudah ada
     if (widget.schedule != null) {
       _courseController.text = widget.schedule!.course;
       _roomController.text = widget.schedule!.room;
@@ -65,6 +69,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
     }
   }
 
+  /// Menampilkan dialog pemilih waktu (Time Picker) untuk jam mulai atau selesai.
   Future<void> _pickTime(bool isStart) async {
     final TimeOfDay? pickedTime = await showTimePicker(
       context: context,
@@ -81,6 +86,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
     }
   }
 
+  /// Memformat objek TimeOfDay menjadi string dengan format HH:MM.
   String _formatTimeOfDay(TimeOfDay? time) {
     if (time == null) return "Pilih Jam";
     return "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
@@ -94,6 +100,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
       appBar: AppBar(
         title: Text(isEditing ? "Edit Jadwal" : "Tambah Jadwal"),
         actions: [
+          // Menampilkan tombol hapus hanya jika dalam mode edit
           if (isEditing)
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.redAccent),
@@ -225,6 +232,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
                 foregroundColor: Colors.white,
               ),
               onPressed: () async {
+                // Validasi kelengkapan form sebelum menyimpan
                 if (_courseController.text.isEmpty ||
                     _startTime == null ||
                     _endTime == null) {
@@ -236,6 +244,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
                   return;
                 }
 
+                // Membangun objek jadwal berdasarkan data yang diinput
                 final newSchedule = ClassSchedule(
                   id: isEditing ? widget.schedule!.id : null,
                   course: _courseController.text,
@@ -248,6 +257,7 @@ class _AddEditScheduleScreenState extends State<AddEditScheduleScreen> {
                   isCancelled: _isCancelled,
                 );
 
+                // Menyimpan atau memperbarui data ke dalam database
                 if (isEditing) {
                   await DatabaseHelper.instance.updateSchedule(newSchedule);
                 } else {
