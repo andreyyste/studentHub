@@ -35,8 +35,8 @@ Ikuti langkah-langkah di bawah ini untuk menjalankan aplikasi di perangkat atau 
 
 **1. Kloning Repositori**
 ```
-git clone [https://github.com/username-anda/student-hub.git](https://github.com/username-anda/student-hub.git)
-cd student-hub
+git clone [https://github.com/andreyyste/studentHub.git](https://github.com/andreyyste/studentHub.git)
+cd studentHub
 ```
 2. Unduh Dependensi
 Unduh seluruh pustaka (packages) yang dibutuhkan oleh proyek.
