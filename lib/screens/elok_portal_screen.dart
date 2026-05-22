@@ -121,15 +121,15 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
               clearCache: false,
               cacheEnabled: true,
             ),
-            onWebViewCreated: (controller) async {
+            onWebViewCreated: (controller) {
               _webViewController = controller;
-              await _updateCanGoBack();
+              _updateCanGoBack();
             },
-            onLoadStop: (controller, url) async {
-              await _updateCanGoBack();
+            onLoadStop: (controller, url) {
+              _updateCanGoBack();
             },
-            onUpdateVisitedHistory: (controller, url, androidIsReload) async {
-              await _updateCanGoBack();
+            onUpdateVisitedHistory: (controller, url, androidIsReload) {
+              _updateCanGoBack();
             },
 
             shouldOverrideUrlLoading: (controller, navigationAction) async {
