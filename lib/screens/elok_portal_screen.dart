@@ -35,6 +35,7 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
   }
 
   Future<void> _updateCanGoBack() async {
+    if (!mounted) return;
     final controller = _webViewController;
     if (controller == null) return;
     final canGoBack = await controller.canGoBack();
@@ -119,15 +120,15 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
               clearCache: false,
               cacheEnabled: true,
             ),
-            onWebViewCreated: (controller) {
+            onWebViewCreated: (controller) async {
               _webViewController = controller;
-              _updateCanGoBack();
+              await _updateCanGoBack();
             },
-            onLoadStop: (controller, url) {
-              _updateCanGoBack();
+            onLoadStop: (controller, url) async {
+              await _updateCanGoBack();
             },
-            onUpdateVisitedHistory: (controller, url, androidIsReload) {
-              _updateCanGoBack();
+            onUpdateVisitedHistory: (controller, url, androidIsReload) async {
+              await _updateCanGoBack();
             },
 
             shouldOverrideUrlLoading: (controller, navigationAction) async {
