@@ -15,6 +15,7 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
   double _progress = 0;
   InAppWebViewController? _webViewController;
   bool _canGoBack = false;
+  bool _isUpdatingCanGoBack = false;
 
   // Mendefinisikan daftar 'whitelist' domain yang aman dan berizin untuk diakses di dalam WebView
   final List<String> _allowedDomains = [
@@ -36,14 +37,20 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
 
   Future<void> _updateCanGoBack() async {
     if (!mounted) return;
+    if (_isUpdatingCanGoBack) return;
     final controller = _webViewController;
     if (controller == null) return;
-    final canGoBack = await controller.canGoBack();
-    if (!mounted) return;
-    if (canGoBack == _canGoBack) return;
-    setState(() {
-      _canGoBack = canGoBack;
-    });
+    _isUpdatingCanGoBack = true;
+    try {
+      final canGoBack = await controller.canGoBack();
+      if (!mounted) return;
+      if (canGoBack == _canGoBack) return;
+      setState(() {
+        _canGoBack = canGoBack;
+      });
+    } finally {
+      _isUpdatingCanGoBack = false;
+    }
   }
 
   Future<void> _handleBackPressed() async {
@@ -123,12 +130,8 @@ class _ElokPortalScreenState extends State<ElokPortalScreen> {
             ),
             onWebViewCreated: (controller) {
               _webViewController = controller;
-              _updateCanGoBack();
             },
             onLoadStop: (controller, url) {
-              _updateCanGoBack();
-            },
-            onUpdateVisitedHistory: (controller, url, androidIsReload) {
               _updateCanGoBack();
             },
 
