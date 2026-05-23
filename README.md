@@ -59,21 +59,14 @@ Bash
 flutter run
 ```
 📂 Struktur Direktori Utama
-```
-
+```text
 lib/
 ├── models/                  # Struktur data (ClassSchedule, StudentTask)
-├── screens/                 # Antarmuka pengguna (UI)
-│   ├── dashboard_screen.dart
-│   ├── schedule_screen.dart
-│   ├── view_tasks_screen.dart
-│   ├── elok_portal_screen.dart
-│   ├── pdf_viewer_screen.dart
-│   └── ai_assistant_screen.dart
-├── database_helper.dart     # Logika konfigurasi dan kueri SQLite
-├── ai_service.dart          # Layanan integrasi API untuk Gemini, Ollama, & GitHub Models
+├── screens/                 # Antarmuka pengguna (UI) utama
+├── widgets/                 # Komponen antarmuka yang dapat digunakan kembali (Cards, Dialogs)
+├── services/                # Layanan integrasi API & kueri basis data (database_helper.dart, ai_service.dart)
+├── utils/                   # Fungsi utilitas pembantu (date_formatter.dart, schedule_helper.dart)
 └── main.dart                # Titik masuk utama aplikasi (Entry Point)
-
 ```
 💡 Cara Penggunaan
 
