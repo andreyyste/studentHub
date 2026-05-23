@@ -104,13 +104,8 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     }
   }
 
-  // --- ANTARMUKA DIALOG FORMULIR PENYIMPANAN PDF ---
+  /// Menampilkan dialog form dengan field sesuai dengan jenis dokumen yang disimulasikan sebagai parameter tipe (misalnya `materi` atau `tugas`)
   void _showDownloadDialog(String type) {
-    // Mereset variabel inputan dan logika form setiap kali jendela dialog terbuka
-    _titleController.clear();
-    _courseController.clear();
-    _selectedDeadline = null; 
-
     showDialog(
       context: context,
       barrierDismissible: false, 
