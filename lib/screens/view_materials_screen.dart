@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import 'package:path_provider/path_provider.dart';
-import '../database_helper.dart';
+import '../services/database_helper.dart';
+import '../widgets/material_card.dart';
+import '../widgets/add_material_dialog.dart';
 import 'pdf_viewer_screen.dart';
 
 class ViewMaterialsScreen extends StatefulWidget {
@@ -48,71 +50,27 @@ class _ViewMaterialsScreenState extends State<ViewMaterialsScreen> {
 
   /// Menampilkan dialog popup formulir kelengkapan keterangan dari dokumen materi yang baru diunggah.
   void _showMaterialDetailsDialog(File originalFile, String fileName) {
-    final titleController = TextEditingController(text: fileName.replaceAll('.pdf', ''));
-    final courseController = TextEditingController();
-    String dialogCategory = 'Slide'; 
-
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: const Text("Detail Materi Baru"),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(labelText: "Judul Materi"),
-                    ),
-                    TextField(
-                      controller: courseController,
-                      decoration: const InputDecoration(labelText: "Mata Kuliah"),
-                    ),
-                    const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      value: dialogCategory,
-                      items: ['Slide', 'Catatan', 'Latihan', 'Lainnya']
-                          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                          .toList(),
-                      onChanged: (val) => setDialogState(() => dialogCategory = val!),
-                      decoration: const InputDecoration(labelText: "Kategori"),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Batal"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (titleController.text.isNotEmpty && courseController.text.isNotEmpty) {
-                      // 1. Menggandakan data file ke dalam penyimpanan terisolasi yang hanya dapat diakses oleh aplikasi
-                      Directory appDocDir = await getApplicationDocumentsDirectory();
-                      String newFilePath = '${appDocDir.path}/$fileName';
-                      await originalFile.copy(newFilePath);
+        return AddMaterialDialog(
+          fileName: fileName,
+          onSave: (title, course, category) async {
+            // 1. Menggandakan data file ke dalam penyimpanan terisolasi yang hanya dapat diakses oleh aplikasi
+            Directory appDocDir = await getApplicationDocumentsDirectory();
+            String newFilePath = '${appDocDir.path}/$fileName';
+            await originalFile.copy(newFilePath);
 
-                      // 2. Meregistrasikan informasi struktural materi ke dalam database lokal
-                      await DatabaseHelper.instance.insertMaterial(
-                        titleController.text,
-                        courseController.text,
-                        dialogCategory,
-                        newFilePath,
-                      );
-
-                      Navigator.pop(context);
-                      _refreshMaterials();
-                    }
-                  },
-                  child: const Text("Simpan"),
-                ),
-              ],
+            // 2. Meregistrasikan informasi struktural materi ke dalam database lokal
+            await DatabaseHelper.instance.insertMaterial(
+              title,
+              course,
+              category,
+              newFilePath,
             );
-          }
+
+            _refreshMaterials();
+          },
         );
       },
     );
