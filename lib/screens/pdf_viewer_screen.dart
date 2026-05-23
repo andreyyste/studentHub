@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
-import '../database_helper.dart'; 
+import '../services/database_helper.dart';
+import '../widgets/save_pdf_dialog.dart'; 
 import '../models/student_task.dart';
 
 class PdfViewerScreen extends StatefulWidget {
@@ -25,26 +26,21 @@ class PdfViewerScreen extends StatefulWidget {
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
   bool isDownloading = false;
 
-  // Pengendali input (TextEditingController) untuk kotak dialog formulir penyimpanan dokumen
-  final TextEditingController _titleController = TextEditingController();
-  final TextEditingController _courseController = TextEditingController();
-  String _selectedCategory = 'Slide'; 
-  final List<String> _categories = ['Slide', 'Catatan', 'Latihan', 'Lainnya'];
-  
-  // Status internal untuk merekam nilai tenggat waktu khusus formulir kategori tugas
-  DateTime? _selectedDeadline; 
+  // Status internal
+  double _downloadProgress = 0.0;
 
   /// Mengelola proses pengunduhan PDF ke memori fisik (Storage) dan menyimpan rekamannya di basis data
-  Future<void> _downloadAndSavePdf(String type) async {
+  Future<void> _downloadAndSavePdf(String type, String title, String course, DateTime? deadline, String category) async {
     if (widget.pdfUrl == null || widget.cookie == null) return;
 
     setState(() {
       isDownloading = true;
+      _downloadProgress = 0.0;
     });
 
     try {
       final dir = await getApplicationDocumentsDirectory();
-      String cleanTitle = _titleController.text.replaceAll(' ', '_');
+      String cleanTitle = title.replaceAll(' ', '_');
       String fileName = "${cleanTitle}_${DateTime.now().millisecondsSinceEpoch}.pdf";
       String savePath = "${dir.path}/$fileName";
 
