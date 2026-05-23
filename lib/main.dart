@@ -2,17 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'database_helper.dart';
-import 'models/student_task.dart';
-import 'models/class_schedule.dart';
-import 'screens/elok_portal_screen.dart';
-import 'screens/view_tasks_screen.dart';
-import 'screens/add_task_screen.dart';
-import 'screens/schedule_screen.dart';
-import 'screens/view_materials_screen.dart'; 
-import 'screens/ai_assistant_screen.dart';
+import 'screens/dashboard_screen.dart';
 
-// Titik masuk utama aplikasi (Main Entry Point)
 Future<void> main() async { 
   // Memastikan binding Flutter telah diinisialisasi sebelum menjalankan fungsi asinkron.
   WidgetsFlutterBinding.ensureInitialized();
