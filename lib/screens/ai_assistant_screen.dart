@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import '../ai_service.dart';
+import '../services/ai_service.dart';
+import '../widgets/chat_bubble.dart';
 
 class AiAssistantScreen extends StatefulWidget {
   const AiAssistantScreen({super.key});
@@ -103,44 +103,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 final msg = _messages[index];
                 final isUser = msg["role"] == "user";
 
-                return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.85,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isUser ? Colors.teal : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(15).copyWith(
-                        bottomRight: isUser ? const Radius.circular(0) : null,
-                        bottomLeft: !isUser ? const Radius.circular(0) : null,
-                      ),
-                    ),
-                    child: isUser
-                        ? Text(
-                            msg["text"]!,
-                            style: const TextStyle(color: Colors.white),
-                          )
-                        : MarkdownBody(
-                            data: msg["text"]!,
-                            selectable: true,
-                            styleSheet: MarkdownStyleSheet(
-                              p: const TextStyle(color: Colors.black87, fontSize: 15),
-                              code: const TextStyle(
-                                backgroundColor: Colors.black87,
-                                color: Colors.greenAccent,
-                                fontFamily: 'monospace',
-                              ),
-                              codeblockDecoration: BoxDecoration(
-                                color: Colors.black87,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                  ),
-                );
+                return ChatBubble(message: msg, isUser: isUser);
               },
             ),
           ),
