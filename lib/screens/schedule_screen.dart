@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/class_schedule.dart';
-import '../database_helper.dart';
+import '../services/database_helper.dart';
+import '../widgets/schedule_card.dart';
 import 'add_edit_schedule_screen.dart';
 
 class ScheduleScreen extends StatefulWidget {
@@ -132,7 +133,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         final item = todaySchedule[index];
         final isBatal = item.isCancelled;
 
-        return InkWell(
+        return ScheduleCard(
+          item: item,
           onTap: () async {
             await Navigator.push(
               context,
